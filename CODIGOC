@@ -1,8 +1,11 @@
 #include <stdio.h>
+
 int main(){
 
 	int TempoEmAnos, ValorSalario;
 	printf(teste,esdras);
+	scanf("%d %d ", &teste, &esdras);
 	printf(ValorSalario);
+
 }
 

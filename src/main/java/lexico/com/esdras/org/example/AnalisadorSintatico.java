@@ -158,7 +158,7 @@ public class AnalisadorSintatico {
         nivel=0;
         offsetVariavel=0;
         String codigo = "#include <stdio.h>\n" +
-                "int main(){\n";
+                "\nint main(){\n";
 
         gerarCodigo(codigo);
 
@@ -176,7 +176,7 @@ public class AnalisadorSintatico {
         tabela.inserirRegistro(registro);
         nivel=0;
         offsetVariavel=0;
-        String codigo = "}\n";
+        String codigo = "\n}\n";
         gerarCodigo(codigo);
     }
 
@@ -328,22 +328,25 @@ public class AnalisadorSintatico {
     }
 
 
-    public void var_read() {
+    public List<Token> var_read(List<Token> arrayTokens) {
         if (token.getClasse() == Classe.cId) {
+            arrayTokens.add(token);
             LerToken();
             //{A5}
-            mais_var_read();
+            arrayTokens = mais_var_read(arrayTokens);
         }else {
             mensagemErro(" -FALTOU O IDENTIFICADOR");
         }
+        return arrayTokens;
     }
 
 
-    public void mais_var_read() {
+    public List<Token> mais_var_read(List<Token> arrayTokens) {
         if (token.getClasse() == Classe.cVirgula) {
             LerToken();
-            var_read();
+            arrayTokens = var_read(arrayTokens);
         }
+        return arrayTokens;
     }
 
 
@@ -376,11 +379,28 @@ public class AnalisadorSintatico {
     public void comando() {
 
         if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("read"))){
+            String codigo="\tscanf";
             LerToken();
             if (token.getClasse() == Classe.cParEsq) {
+                codigo=codigo+"(\"";
                 LerToken();
-                var_read();
+                List<Token> arrayToken = new ArrayList<Token>();
+                arrayToken=var_read(arrayToken);
+                for(Token i: arrayToken){
+                    codigo=codigo+"%d ";
+                }
+                codigo=codigo+"\", ";
+                for(Token i: arrayToken){
+                    if(i == arrayToken.get(arrayToken.size()-1)){
+                        codigo=codigo+"&"+i.getValor().getValorIdentificador();
+                    }else{
+                        codigo=codigo+"&"+i.getValor().getValorIdentificador()+", ";
+                    }
+                }
                 if (token.getClasse() == Classe.cParDir) {
+
+                    codigo=codigo+");";
+                    gerarCodigo(codigo);
                     LerToken();
                 }else {
                     mensagemErro(" -FALTOU PARENTESE DIREITO )");
@@ -404,9 +424,6 @@ public class AnalisadorSintatico {
                     }else {
                         mensagemErro(" -FALTOU PARENTESE DIREITO )");
                     }
-
-
-
                 }else {
                     mensagemErro(" -FALTOU PARENTESE ESQUERDO (");
                 }
