@@ -1,6 +1,8 @@
 #include <stdio.h>
-main(){
+int main(){
 
 	int TempoEmAnos, ValorSalario;
+	printf(teste,esdras);
+	printf(ValorSalario);
 }
 

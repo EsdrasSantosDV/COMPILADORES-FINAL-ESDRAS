@@ -158,7 +158,7 @@ public class AnalisadorSintatico {
         nivel=0;
         offsetVariavel=0;
         String codigo = "#include <stdio.h>\n" +
-                "main(){\n";
+                "int main(){\n";
 
         gerarCodigo(codigo);
 
@@ -348,22 +348,29 @@ public class AnalisadorSintatico {
 
 
 
-    public void var_write() {
+    public String var_write(String codigo) {
+
         if (token.getClasse() == Classe.cId) {
+            codigo=codigo+token.getValor().getValorIdentificador();
             LerToken();
             //{A6}
-            mais_var_write();
+            codigo=mais_var_write(codigo);
         }else {
             mensagemErro(" -FALTOU O IDENTIFICADOR");
         }
+
+        return codigo;
     }
 
 
-    public void mais_var_write() {
+    public String mais_var_write(String codigo) {
         if (token.getClasse() == Classe.cVirgula) {
+            codigo=codigo+ ',';
             LerToken();
-            var_write();
+            codigo=var_write(codigo);
+
         }
+        return codigo;
     }
 
     public void comando() {
@@ -384,15 +391,22 @@ public class AnalisadorSintatico {
         }else
             //write ( <var_write> ) |
             if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("write"))){
+                String codigo="\tprintf";
                 LerToken();
                 if (token.getClasse() == Classe.cParEsq) {
+                    codigo=codigo+"(";
                     LerToken();
-                    var_write();
+                    codigo=codigo+var_write("");
                     if (token.getClasse() == Classe.cParDir) {
+                        codigo=codigo+");";
+                        gerarCodigo(codigo);
                         LerToken();
                     }else {
                         mensagemErro(" -FALTOU PARENTESE DIREITO )");
                     }
+
+
+
                 }else {
                     mensagemErro(" -FALTOU PARENTESE ESQUERDO (");
                 }
