@@ -1,0 +1,6 @@
+lexico\com\esdras\org\example\App.class
+lexico\com\esdras\org\example\Token.class
+lexico\com\esdras\org\example\AnalisadorLexico.class
+lexico\com\esdras\org\example\Valor.class
+lexico\com\esdras\org\example\AnalisadorSintatico.class
+lexico\com\esdras\org\example\Classe.class
