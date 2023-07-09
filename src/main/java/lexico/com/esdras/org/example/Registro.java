@@ -77,7 +77,7 @@ public class Registro {
 
 	@Override
 	public String toString() {
-		return "nome: " + nome + "\ncategoria: " + categoria + "\nnivel: " + nivel + "\ntipo: " + tipo + "\noffset: " + offset + "\nnumeroParametros: " + numeroParametros + "\nrotulo: " + rotulo;
+		return "[nome: " + nome + "\ncategoria: " + categoria + "\nnivel: " + nivel + "\ntipo: " + tipo + "\noffset: " + offset + "\nnumeroParametros: " + numeroParametros + "\nrotulo: " + rotulo + "]\n\n";
 	}
 
 }

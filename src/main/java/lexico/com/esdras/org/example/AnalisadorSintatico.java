@@ -18,6 +18,8 @@ public class AnalisadorSintatico {
 
     private TabelaSimbolos tabela;
 
+
+    private int endereco;
     private int offsetVariavel;
     private int contRotulo = 1;
 
@@ -67,6 +69,7 @@ public class AnalisadorSintatico {
     public void Analisar(){
         LerToken();
 
+        this.endereco = 0;
 
         nomeArquivoSaida = "CODIGOC";
         caminhoArquivoSaida = Paths.get(nomeArquivoSaida).toAbsolutePath().toString();
@@ -84,7 +87,7 @@ public class AnalisadorSintatico {
             e.printStackTrace();
         }
         System.out.println("== TABELA DE SIMBOLOS ==");
-
+        System.out.println(this.tabela);
 
 
     }
@@ -128,6 +131,7 @@ public class AnalisadorSintatico {
                 } else {
                     mensagemErro(" - FALTOU ENCERRAR COM PONTO");
                 }
+                A2();
             } else {
                 mensagemErro(" -FALTOU IDENTIFICAR O NOME DO PROGRAMA");
             }
@@ -158,6 +162,22 @@ public class AnalisadorSintatico {
 
         gerarCodigo(codigo);
 
+    }
+
+    public void A2()
+    {
+        Registro registro=new Registro();
+        registro.setNome(null);
+        registro.setCategoria(Categoria.PROGRAMAPRINCIPAL);
+        registro.setNivel(0);
+        registro.setOffset(0);
+        registro.setTabelaSimbolos(tabela);
+        registro.setRotulo("finalCode");
+        tabela.inserirRegistro(registro);
+        nivel=0;
+        offsetVariavel=0;
+        String codigo = "}\n";
+        gerarCodigo(codigo);
     }
 
     public void corpo() {
@@ -211,16 +231,43 @@ public class AnalisadorSintatico {
 
     public void tipo_var() {
         if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("integer"))) {
+            A3("int");
             LerToken();
+
+
         }else if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("real"))) {
+            A3("float");
             LerToken();
         }else {
             mensagemErro(" -FALTOU A DECLARAÇÃO DO INTEGER");
         }
+
+
+
+
     }
+
+    private void A3(String type) {
+        String codigo= '\t'+type;
+        for(int i=0;i<this.ultimasVariaveisDeclaradas.size();i++)
+        {
+            codigo=codigo+' '+ this.ultimasVariaveisDeclaradas.get(i).getNome();
+            if(i == this.ultimasVariaveisDeclaradas.size()-1)
+            {
+                codigo=codigo + ';';
+            }
+            else{
+                codigo=codigo + ',';
+            }
+        }
+        gerarCodigo(codigo);
+    }
+
+
 
     public void variaveis() {
         if (token.getClasse() == Classe.cId) {
+            A4();
             LerToken();
             mais_var();
         }else {
@@ -228,10 +275,23 @@ public class AnalisadorSintatico {
         }
     }
 
+    public void A4()
+    {
+        Registro registro=new Registro();
+        registro.setNome(token.getValor().getValorIdentificador());
+        registro.setCategoria(Categoria.VARIAVEL);
+        registro.setNivel(0);
+        registro.setOffset(0);
+        registro.setTabelaSimbolos(tabela);
+        this.endereco++;
+        registro.setRotulo("variavel"+this.endereco);
+        ultimasVariaveisDeclaradas.add(registro);
+        this.tabela.inserirRegistro(registro);
+    }
+
     public void mais_var(){
         if (token.getClasse() == Classe.cVirgula) {
             LerToken();
-            //{A2}
             variaveis();
         }
     }

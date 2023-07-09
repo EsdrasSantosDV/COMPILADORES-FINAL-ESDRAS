@@ -82,5 +82,9 @@ public class TabelaSimbolos {
 	public List<Registro> getRegistros() {
 		return registros;
 	}
-	
+
+
+
+
+
 }
