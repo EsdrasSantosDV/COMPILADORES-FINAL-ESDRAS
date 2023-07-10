@@ -71,7 +71,7 @@ public class AnalisadorSintatico {
 
         this.endereco = 0;
 
-        nomeArquivoSaida = "CODIGOC";
+        nomeArquivoSaida = "CODIGOC.c";
         caminhoArquivoSaida = Paths.get(nomeArquivoSaida).toAbsolutePath().toString();
 
         bw = null;
@@ -411,15 +411,25 @@ public class AnalisadorSintatico {
         }else
             //write ( <var_write> ) |
             if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("write"))){
-                String codigo="\tprintf";
+                String referencias="\tprintf";
+                String codigo = "";
                 LerToken();
                 if (token.getClasse() == Classe.cParEsq) {
-                    codigo=codigo+"(";
+                    referencias = referencias + "(\"";
                     LerToken();
+
                     codigo=codigo+var_write("");
+
+                    if (codigo.length() >  0) {
+                        referencias = referencias + "%d ".repeat(codigo.split(",").length);
+                        referencias = referencias + "\", ";
+                    } else {
+                        referencias = referencias + "\"";
+                    }
+
                     if (token.getClasse() == Classe.cParDir) {
                         codigo=codigo+");";
-                        gerarCodigo(codigo);
+                        gerarCodigo(referencias + codigo);
                         LerToken();
                     }else {
                         mensagemErro(" -FALTOU PARENTESE DIREITO )");
@@ -430,25 +440,35 @@ public class AnalisadorSintatico {
             }else
 
                 if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("for"))){
+                    String codigo="\n\tfor(";
                     LerToken();
                     if (token.getClasse() == Classe.cId) {
+                        String identificador = token.getValor().getValorIdentificador();
+                        codigo=codigo+identificador;
                         LerToken();
 
                         if (token.getClasse() == Classe.cAtribuicao){
+                            codigo=codigo+"=";
                             LerToken();
-                            expressao();
-                            //{A26}
+
+                            codigo=codigo+expressao();
+
                             if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("to"))){
+                                codigo=codigo+";";
                                 LerToken();
-                                //{A27}
-                                expressao();
-                                //{A28}
+                                codigo=codigo+identificador;
+                                codigo=codigo+"<="+expressao()+";";
+                                codigo=codigo+identificador + "++)";
                                 if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("do"))){
                                     LerToken();
                                     if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("begin"))){
+                                        codigo=codigo+"{";
+                                        gerarCodigo(codigo);
                                         LerToken();
                                         sentencas();
                                         if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("end"))){
+                                            String codigoFinal = "\t}";
+                                            gerarCodigo(codigoFinal);
                                             LerToken();
                                             //{A29}
                                         }else {
@@ -472,16 +492,27 @@ public class AnalisadorSintatico {
                 }else
 
                     if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("repeat"))){
+                        String codigo="\n\tdo {\n\t";
+
                         LerToken();
+                        gerarCodigo(codigo);
                         //{A23}
                         sentencas();
                         if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("until"))){
+
                             LerToken();
                             if (token.getClasse() == Classe.cParEsq){
+                                String codigoFinal="\n\t}while";
+                                 codigoFinal=codigoFinal+"(";
                                 LerToken();
-                                condicao();
+
+                                codigoFinal=codigoFinal+condicao();
+
                                 if (token.getClasse() == Classe.cParDir){
+                                    codigoFinal=codigoFinal+");";
+                                    gerarCodigo(codigoFinal);
                                     LerToken();
+
                                     //{A24}
                                 }else {
                                     mensagemErro(" -FALTOU FECHAR PARENTESES NO REPEAT");
@@ -495,20 +526,27 @@ public class AnalisadorSintatico {
                     }
 
                     else if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("while"))){
+                        String codigo="\n\twhile";
                         LerToken();
                         //{A20}
                         if (token.getClasse() == Classe.cParEsq){
+                            codigo=codigo+"(";
                             LerToken();
-                            condicao();
+                            codigo=codigo+condicao();
                             if (token.getClasse() == Classe.cParDir){
+                                codigo=codigo+")";
                                 LerToken();
                                 //{A21}
                                 if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("do"))){
                                     LerToken();
                                     if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("begin"))){
+                                        codigo=codigo+"{\n";
+                                        gerarCodigo(codigo);
                                         LerToken();
                                         sentencas();
                                         if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("end"))){
+                                            codigo="\t}\n";
+                                            gerarCodigo(codigo);
                                             LerToken();
                                             //{A22}
                                         }else {
@@ -528,20 +566,29 @@ public class AnalisadorSintatico {
                         }
                     }
                     else if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("if"))){
+                        String codigo="";
                         LerToken();
                         if (token.getClasse() == Classe.cParEsq){
+                            codigo=codigo+"\n\tif(";
                             LerToken();
-                            condicao();
+                            codigo=codigo+condicao();
                             if (token.getClasse() == Classe.cParDir){
+                                codigo=codigo+")";
                                 LerToken();
                                 //{A17}
                                 if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("then"))){
                                     LerToken();
                                     if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("begin"))){
+                                        codigo=codigo +" {";
+                                        gerarCodigo(codigo);
                                         LerToken();
                                         sentencas();
                                         if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("end"))){
                                             LerToken();
+
+                                            String codigoFinal = "";
+                                            codigoFinal = codigoFinal + "\t}";
+                                            gerarCodigo(codigoFinal);
                                             //{A22}
                                             pfalsa();
                                             //{A19}
@@ -562,11 +609,15 @@ public class AnalisadorSintatico {
                         }
                     }
                     else if (token.getClasse() == Classe.cId){
+                        String codigo="\n\t";
+                        codigo=codigo+token.getValor().getValorIdentificador();
                         LerToken();
                         //ação 13
                         if (token.getClasse() == Classe.cAtribuicao){
+                            codigo=codigo+"=";
                             LerToken();
-                            expressao();
+                            codigo=codigo+expressao()+";";
+                            gerarCodigo(codigo);
                             //{A14}
                         }
                         else {
@@ -575,22 +626,30 @@ public class AnalisadorSintatico {
                     }
     }
 
-    public void condicao() {
-        expressao();
-        relacao();
+    public String condicao() {
+        String expressao1 = expressao();
+        String relacao = relacao();
         //{A15}
-        expressao();
+        String expressao2 = expressao();
         //{A16}
+
+        return expressao1 + relacao + expressao2;
     }
 
 
     public void pfalsa() {
+        String codigo = "";
         if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("else"))){
+            codigo = codigo + "\telse";
             LerToken();
             if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("begin"))){
+                codigo = codigo + "{";
+                gerarCodigo(codigo);
                 LerToken();
                 sentencas();
                 if ((token.getClasse() == Classe.cPalRes) && (token.getValor().getValorIdentificador().equalsIgnoreCase("end"))){
+                    String codigoFinal = "\n\t}";
+                    gerarCodigo(codigoFinal);
                     LerToken();
                 }else {
                     mensagemErro(" -FALTOU FINALIZAR COM O END");
@@ -601,81 +660,126 @@ public class AnalisadorSintatico {
         }
     }
 
-    public void relacao() {
+    public String relacao() {
+        String operador="";
         if (token.getClasse() == Classe.cIgual) {
+            operador="=";
             LerToken();
         }else if (token.getClasse() == Classe.cMaior) {
+            operador=">";
             LerToken();
         }else if (token.getClasse() == Classe.cMenor) {
+            operador="<";
             LerToken();
         }else if (token.getClasse() == Classe.cMaiorIgual) {
+            operador = ">=";
             LerToken();
         }else if (token.getClasse() == Classe.cMenorIgual) {
+            operador = "<=";
             LerToken();
         }else if (token.getClasse() == Classe.cDiferente) {
+            operador = "!=";
             LerToken();
         }else {
             mensagemErro(" -FALTOU O OPERADOR DE RELAÇÃO");
         }
+
+        return operador;
     }
 
-    public void expressao() {
-        termo();
-        outros_termos();
+    public String expressao() {
+        String termo = termo();
+        String outrosTermos = outros_termos();
+
+        return termo + outrosTermos;
     }
 
-    public void outros_termos() {
+    public String outros_termos() {
+        String op = "";
+        String termo= "";
+        String outrosTermos = "";
+
         if (token.getClasse() == Classe.cMais || token.getClasse() == Classe.cMenos) {
-            op_ad();
-            termo();
-            outros_termos();
+            op = op_ad();
+            termo = termo();
+            outrosTermos = outros_termos();
         }
+
+        return op + termo + outrosTermos;
     }
 
-    public void op_ad() {
-        if (token.getClasse() == Classe.cMais || token.getClasse() == Classe.cMenos) {
+    public String op_ad() {
+        String op = "";
+        if (token.getClasse() == Classe.cMais) {
+            op = "+";
+            LerToken();
+        } else if (token.getClasse() == Classe.cMenos) {
+            op = "-";
             LerToken();
         }else {
             mensagemErro(" - FALTOU COLOCAR O OPERADOR DE ADIÇÃO OU DE SUBTRAÇÃO");
         }
+        return op;
     }
 
-    public void termo() {
-        fator();
-        mais_fatores();
+    public String termo() {
+        String fator = fator();
+        String maisFatores = mais_fatores();
+
+        return fator + maisFatores;
     }
 
 
-    public void mais_fatores() {
+    public String mais_fatores() {
         if (token.getClasse() == Classe.cMultiplicacao || token.getClasse() == Classe.cDivisao) {
-            op_mul();
+            String op = op_mul();
             //{A11}
-            fator();
+            String fator = fator();
             //{A12}
-            mais_fatores();
+            String outrosFatores = mais_fatores();
+
+            return op + fator + outrosFatores;
         }
+
+        return "";
     }
 
-    public void op_mul() {
-        if (token.getClasse() == Classe.cMultiplicacao || token.getClasse() == Classe.cDivisao) {
+    public String op_mul() {
+        String op = "";
+        if (token.getClasse() == Classe.cMultiplicacao) {
+            op = "*";
             LerToken();
-        }else {
+        } else if (token.getClasse() == Classe.cDivisao) {
+            op = "/";
+            LerToken();
+        } else {
             mensagemErro(" -FALTOU A MULTIPLICAÇÃO E DIVISÃO");
         }
+
+        return op;
     }
 
 
-    public void fator() {
+    public String fator() {
+        String returnFator = "";
         if (token.getClasse() == Classe.cId) {
+            returnFator = token.getValor().getValorIdentificador();
+
             LerToken();
             //{A7}
-        }else if (token.getClasse() == Classe.cInt || token.getClasse() == Classe.cReal) {
+        } else if (token.getClasse() == Classe.cInt) {
+            returnFator = String.valueOf(token.getValor().getValorInteiro());
             LerToken();
             //{A8}
-        }else if (token.getClasse() == Classe.cParEsq){
+        } else if (token.getClasse() == Classe.cReal) {
+            returnFator = String.valueOf(token.getValor().getValorDecimal());
             LerToken();
-            expressao();
+        }else if (token.getClasse() == Classe.cParEsq){
+            returnFator="(";
+            LerToken();
+            returnFator = returnFator + expressao();
             if (token.getClasse() == Classe.cParDir){
+                returnFator=returnFator + ")";
                 LerToken();
             }else {
                 mensagemErro(" -FALTOU PARENTESE DIREITO");
@@ -683,6 +787,8 @@ public class AnalisadorSintatico {
         }else {
             mensagemErro(" -FALTOU FATOR IN NUM EXP");
         }
+
+        return returnFator;
     }
 
 }

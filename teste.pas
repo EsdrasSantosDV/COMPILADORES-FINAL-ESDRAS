@@ -1,15 +1,35 @@
 Program CalcularSalario
-Var TempoEmAnos, ValorSalario : Integer;
+Var TempoEmAnos, ValorSalario,i : Integer;
 Begin
-  Write(teste,esdras);
-  read(teste, esdras);
-  If (TempoEmAnos > 10) Then
+  read(TempoEmAnos, ValorSalario);
+  Write(TempoEmAnos);
+  If ((TempoEmAnos * 10) + 5 <= (10 * 10) + 1) Then
   Begin
-    ValorSalario := 100;
+    If (TempoEmAnos > 1) then
+      Begin
+        ValorSalario := 100;
+      End;
   End
   Else
   Begin
     ValorSalario := ValorSalario * 2;
   End;
-  Write(ValorSalario);
+
+  For ValorSalario := 5 to 50 do
+  Begin
+    Write(ValorSalario);
+  End;
+
+  While (i < 10) do
+  Begin
+    Write(i);
+    i := i + 1;
+  End;
+
+  Repeat
+    Write(i);
+    i := i + 1;
+  until (i >= 10);
+
+
 End.
